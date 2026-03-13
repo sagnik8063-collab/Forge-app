@@ -230,7 +230,8 @@ input:"#ffffff"
 const styles = StyleSheet.create({
 
 safeArea:{
-flex:1
+flex:1,
+paddingTop:20
 },
 
 container:{

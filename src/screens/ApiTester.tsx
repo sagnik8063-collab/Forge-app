@@ -1,582 +1,538 @@
 import React, { useState } from "react";
 import {
-View,
-Text,
-StyleSheet,
-TextInput,
-TouchableOpacity,
-ScrollView,
-SafeAreaView,
-StatusBar
+  View,
+  Text,
+  StyleSheet,
+  TextInput,
+  TouchableOpacity,
+  ScrollView,
+  SafeAreaView,
+  StatusBar
 } from "react-native";
 
 import { Send, ChevronDown, Trash2 } from "lucide-react-native";
 
 const ApiTester = () => {
 
-const [activeTab,setActiveTab] = useState("Params");
-const [bodyType,setBodyType] = useState("JSON");
+  const [activeTab, setActiveTab] = useState("Params");
+  const [bodyType, setBodyType] = useState("JSON");
 
-const [method,setMethod] = useState("GET");
-const [showDropdown,setShowDropdown] = useState(false);
+  const [method, setMethod] = useState("GET");
+  const [showDropdown, setShowDropdown] = useState(false);
 
-const methods = ["GET","POST","PUT","DELETE","PATCH"];
+  const [url, setUrl] = useState("");
+  const [body, setBody] = useState("");
 
-const [headers,setHeaders] = useState([
-{ id:1,key:"Content-Type",value:"application/json",enabled:true }
-]);
+  const methods = ["GET", "POST", "PUT", "DELETE", "PATCH"];
 
-const [params,setParams] = useState([]);
+  const [headers, setHeaders] = useState([
+    { id: 1, key: "Content-Type", value: "application/json", enabled: true }
+  ]);
 
-const selectMethod = (m:string)=>{
-setMethod(m);
-setShowDropdown(false);
-};
+  const [params, setParams] = useState([]);
 
-const updateHeader = (id:number,field:string,value:string)=>{
-setHeaders(prev=>prev.map(h=>h.id===id?{...h,[field]:value}:h));
-};
+  /* ================= API REQUEST ================= */
 
-const toggleHeader = (id:number)=>{
-setHeaders(prev=>prev.map(h=>h.id===id?{...h,enabled:!h.enabled}:h));
-};
+  const handleSend = async () => {
 
-const addHeader = ()=>{
-setHeaders(prev=>[
-...prev,
-{ id:Date.now(),key:"",value:"",enabled:true }
-]);
-};
+    try {
 
-const deleteHeader = (id:number)=>{
-setHeaders(prev=>prev.filter(h=>h.id!==id));
-};
+      let requestHeaders: any = {};
 
+      headers.forEach(h => {
+        if (h.enabled && h.key) {
+          requestHeaders[h.key] = h.value;
+        }
+      });
 
-/* PARAM FUNCTIONS */
+      let query = params
+        .filter(p => p.enabled && p.key)
+        .map(p => `${p.key}=${p.value}`)
+        .join("&");
 
-const addParam = ()=>{
-setParams(prev=>[
-...prev,
-{ id:Date.now(),key:"",value:"",enabled:true }
-]);
-};
+      let finalUrl = query ? `${url}?${query}` : url;
 
-const updateParam = (id:number,field:string,value:string)=>{
-setParams(prev=>prev.map(p=>p.id===id?{...p,[field]:value}:p));
-};
+      const options: any = {
+        method,
+        headers: requestHeaders
+      };
 
-const toggleParam = (id:number)=>{
-setParams(prev=>prev.map(p=>p.id===id?{...p,enabled:!p.enabled}:p));
-};
+      if (method !== "GET" && body) {
+        options.body = body;
+      }
 
-const deleteParam = (id:number)=>{
-setParams(prev=>prev.filter(p=>p.id!==id));
-};
+      const res = await fetch(finalUrl, options);
 
-return(
+      console.log("Status:", res.status);
 
-<SafeAreaView style={styles.safeArea}>
+    } catch (err) {
 
-<StatusBar barStyle="light-content"/>
+      console.log("Request failed:", err);
 
-<View style={styles.container}>
+    }
+  };
 
-{/* REQUEST BAR */}
+  /* ================= METHOD ================= */
 
-<View style={styles.requestBar}>
+  const selectMethod = (m: string) => {
+    setMethod(m);
+    setShowDropdown(false);
+  };
 
-<View style={styles.dropdownContainer}>
+  /* ================= HEADER FUNCTIONS ================= */
 
-<TouchableOpacity
-style={styles.method}
-onPress={()=>setShowDropdown(!showDropdown)}
->
+  const updateHeader = (id: number, field: string, value: string) => {
+    setHeaders(prev =>
+      prev.map(h => (h.id === id ? { ...h, [field]: value } : h))
+    );
+  };
 
-<Text style={styles.methodText}>{method}</Text>
-<ChevronDown size={14} color="#9aa4b2"/>
+  const toggleHeader = (id: number) => {
+    setHeaders(prev =>
+      prev.map(h =>
+        h.id === id ? { ...h, enabled: !h.enabled } : h
+      )
+    );
+  };
 
-</TouchableOpacity>
+  const addHeader = () => {
+    setHeaders(prev => [
+      ...prev,
+      { id: Date.now(), key: "", value: "", enabled: true }
+    ]);
+  };
 
-{showDropdown &&(
+  const deleteHeader = (id: number) => {
+    setHeaders(prev => prev.filter(h => h.id !== id));
+  };
 
-<View style={styles.dropdown}>
+  /* ================= PARAM FUNCTIONS ================= */
 
-{methods.map(m=>(
-<TouchableOpacity
-key={m}
-style={styles.dropdownItem}
-onPress={()=>selectMethod(m)}
->
-<Text style={styles.dropdownText}>{m}</Text>
-</TouchableOpacity>
-))}
+  const addParam = () => {
+    setParams(prev => [
+      ...prev,
+      { id: Date.now(), key: "", value: "", enabled: true }
+    ]);
+  };
 
-</View>
+  const updateParam = (id: number, field: string, value: string) => {
+    setParams(prev =>
+      prev.map(p => (p.id === id ? { ...p, [field]: value } : p))
+    );
+  };
 
-)}
+  const toggleParam = (id: number) => {
+    setParams(prev =>
+      prev.map(p =>
+        p.id === id ? { ...p, enabled: !p.enabled } : p
+      )
+    );
+  };
 
-</View>
+  const deleteParam = (id: number) => {
+    setParams(prev => prev.filter(p => p.id !== id));
+  };
 
-<TextInput
-placeholder="https://api.example.com/endpoint"
-placeholderTextColor="#6b7280"
-style={styles.urlInput}
-/>
+  return (
 
-<TouchableOpacity style={styles.sendButton}>
-<Send size={16} color="white"/>
-<Text style={styles.sendText}>Send</Text>
-</TouchableOpacity>
+    <SafeAreaView style={styles.safeArea}>
+      <StatusBar barStyle="light-content" />
 
-</View>
+      <View style={styles.container}>
+
+        {/* REQUEST BAR */}
 
+        <View style={styles.requestBar}>
+
+          <View style={styles.dropdownContainer}>
+
+            <TouchableOpacity
+              style={styles.method}
+              onPress={() => setShowDropdown(!showDropdown)}
+            >
+              <Text style={styles.methodText}>{method}</Text>
+              <ChevronDown size={14} color="#9aa4b2" />
+            </TouchableOpacity>
+
+            {showDropdown && (
+              <View style={styles.dropdown}>
+                {methods.map(m => (
+                  <TouchableOpacity
+                    key={m}
+                    style={styles.dropdownItem}
+                    onPress={() => selectMethod(m)}
+                  >
+                    <Text style={styles.dropdownText}>{m}</Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            )}
 
-{/* TABS */}
+          </View>
 
-<View style={styles.tabs}>
+          <TextInput
+            value={url}
+            onChangeText={setUrl}
+            placeholder="https://api.example.com/endpoint"
+            placeholderTextColor="#6b7280"
+            style={styles.urlInput}
+          />
 
-<TouchableOpacity onPress={()=>setActiveTab("Params")}>
+          <TouchableOpacity
+            style={styles.sendButton}
+            onPress={handleSend}
+          >
+            <Send size={16} color="white" />
+            <Text style={styles.sendText}>Send</Text>
+          </TouchableOpacity>
 
-<View style={styles.headerTab}>
-<Text style={[
-styles.tabText,
-activeTab==="Params" && styles.activeTab
-]}>
-Params
-</Text>
+        </View>
 
-<View style={styles.badge}>
-<Text style={styles.badgeText}>{params.length}</Text>
-</View>
 
-</View>
+        {/* TABS */}
 
-</TouchableOpacity>
+        <View style={styles.tabs}>
 
+          <TouchableOpacity onPress={() => setActiveTab("Params")}>
+            <Text style={[styles.tabText, activeTab === "Params" && styles.activeTab]}>
+              Params
+            </Text>
+          </TouchableOpacity>
 
-<TouchableOpacity onPress={()=>setActiveTab("Headers")}>
+          <TouchableOpacity onPress={() => setActiveTab("Headers")}>
+            <Text style={[styles.tabText, activeTab === "Headers" && styles.activeTab]}>
+              Headers
+            </Text>
+          </TouchableOpacity>
 
-<View style={styles.headerTab}>
-<Text style={[
-styles.tabText,
-activeTab==="Headers" && styles.activeTab
-]}>
-Headers
-</Text>
+          <TouchableOpacity onPress={() => setActiveTab("Body")}>
+            <Text style={[styles.tabText, activeTab === "Body" && styles.activeTab]}>
+              Body
+            </Text>
+          </TouchableOpacity>
 
-<View style={styles.badge}>
-<Text style={styles.badgeText}>{headers.length}</Text>
-</View>
-</View>
+        </View>
 
-</TouchableOpacity>
 
-<TouchableOpacity onPress={()=>setActiveTab("Body")}>
-<Text style={[
-styles.tabText,
-activeTab==="Body" && styles.activeTab
-]}>
-Body
-</Text>
-</TouchableOpacity>
+        {/* REQUEST SECTION */}
 
-</View>
+        <View style={styles.requestSection}>
 
+          {/* PARAMS */}
 
-{/* REQUEST SECTION */}
+          {activeTab === "Params" && (
 
-<View style={styles.requestSection}>
+            <ScrollView style={styles.headersContainer}>
 
+              {params.map(param => (
+                <View key={param.id} style={styles.headerRow}>
 
-{/* PARAMS TAB */}
+                  <TouchableOpacity
+                    style={[styles.checkbox, param.enabled && styles.checkboxActive]}
+                    onPress={() => toggleParam(param.id)}
+                  />
 
-{activeTab==="Params" &&(
+                  <TextInput
+                    value={param.key}
+                    style={styles.headerInput}
+                    placeholder="Parameter"
+                    placeholderTextColor="#6b7280"
+                    onChangeText={(text) => updateParam(param.id, "key", text)}
+                  />
 
-<ScrollView style={styles.headersContainer}>
+                  <TextInput
+                    value={param.value}
+                    style={styles.headerInput}
+                    placeholder="Value"
+                    placeholderTextColor="#6b7280"
+                    onChangeText={(text) => updateParam(param.id, "value", text)}
+                  />
 
-{params.map(param=>(
-<View key={param.id} style={styles.headerRow}>
+                  <TouchableOpacity onPress={() => deleteParam(param.id)}>
+                    <Trash2 size={18} color="#9aa4b2" />
+                  </TouchableOpacity>
 
-<TouchableOpacity
-style={[
-styles.checkbox,
-param.enabled && styles.checkboxActive
-]}
-onPress={()=>toggleParam(param.id)}
-/>
+                </View>
+              ))}
 
-<TextInput
-value={param.key}
-style={styles.headerInput}
-placeholder="Parameter"
-placeholderTextColor="#6b7280"
-onChangeText={(text)=>updateParam(param.id,"key",text)}
-/>
+              <TouchableOpacity onPress={addParam}>
+                <Text style={styles.addText}>+ Add</Text>
+              </TouchableOpacity>
 
-<TextInput
-value={param.value}
-style={styles.headerInput}
-placeholder="Value"
-placeholderTextColor="#6b7280"
-onChangeText={(text)=>updateParam(param.id,"value",text)}
-/>
+            </ScrollView>
 
-<TouchableOpacity onPress={()=>deleteParam(param.id)}>
-<Trash2 size={18} color="#9aa4b2"/>
-</TouchableOpacity>
+          )}
 
-</View>
-))}
 
-<TouchableOpacity onPress={addParam}>
-<Text style={styles.addText}>+ Add</Text>
-</TouchableOpacity>
+          {/* HEADERS */}
 
-</ScrollView>
+          {activeTab === "Headers" && (
 
-)}
+            <ScrollView style={styles.headersContainer}>
 
+              {headers.map(header => (
+                <View key={header.id} style={styles.headerRow}>
 
-{/* HEADERS TAB */}
+                  <TouchableOpacity
+                    style={[styles.checkbox, header.enabled && styles.checkboxActive]}
+                    onPress={() => toggleHeader(header.id)}
+                  />
 
-{activeTab==="Headers" &&(
+                  <TextInput
+                    value={header.key}
+                    style={styles.headerInput}
+                    placeholder="Header"
+                    placeholderTextColor="#6b7280"
+                    onChangeText={(text) => updateHeader(header.id, "key", text)}
+                  />
 
-<ScrollView style={styles.headersContainer}>
+                  <TextInput
+                    value={header.value}
+                    style={styles.headerInput}
+                    placeholder="Value"
+                    placeholderTextColor="#6b7280"
+                    onChangeText={(text) => updateHeader(header.id, "value", text)}
+                  />
 
-{headers.map(header=>(
-<View key={header.id} style={styles.headerRow}>
+                  <TouchableOpacity onPress={() => deleteHeader(header.id)}>
+                    <Trash2 size={18} color="#9aa4b2" />
+                  </TouchableOpacity>
 
-<TouchableOpacity
-style={[
-styles.checkbox,
-header.enabled && styles.checkboxActive
-]}
-onPress={()=>toggleHeader(header.id)}
-/>
+                </View>
+              ))}
 
-<TextInput
-value={header.key}
-style={styles.headerInput}
-placeholder="Header"
-placeholderTextColor="#6b7280"
-onChangeText={(text)=>updateHeader(header.id,"key",text)}
-/>
+              <TouchableOpacity onPress={addHeader}>
+                <Text style={styles.addText}>+ Add</Text>
+              </TouchableOpacity>
 
-<TextInput
-value={header.value}
-style={styles.headerInput}
-placeholder="Value"
-placeholderTextColor="#6b7280"
-onChangeText={(text)=>updateHeader(header.id,"value",text)}
-/>
+            </ScrollView>
 
-<TouchableOpacity onPress={()=>deleteHeader(header.id)}>
-<Trash2 size={18} color="#9aa4b2"/>
-</TouchableOpacity>
+          )}
 
-</View>
-))}
 
-<TouchableOpacity onPress={addHeader}>
-<Text style={styles.addText}>+ Add</Text>
-</TouchableOpacity>
+          {/* BODY */}
 
-</ScrollView>
+          {activeTab === "Body" && (
 
-)}
+            <View style={styles.bodyContainer}>
 
+              <View style={styles.bodyTabs}>
 
-{/* BODY TAB */}
+                {["JSON", "FORM-DATA", "RAW"].map(type => (
+                  <TouchableOpacity
+                    key={type}
+                    onPress={() => setBodyType(type)}
+                    style={[
+                      styles.bodyTabButton,
+                      bodyType === type && styles.bodyTabActive
+                    ]}
+                  >
+                    <Text style={styles.bodyTabText}>{type}</Text>
+                  </TouchableOpacity>
+                ))}
 
-{activeTab==="Body" &&(
+              </View>
 
-<View style={styles.bodyContainer}>
-
-<View style={styles.bodyTabs}>
-
-{["JSON","FORM-DATA","RAW"].map(type=>(
-<TouchableOpacity
-key={type}
-onPress={()=>setBodyType(type)}
-style={[
-styles.bodyTabButton,
-bodyType===type && styles.bodyTabActive
-]}
->
-<Text style={styles.bodyTabText}>{type}</Text>
-</TouchableOpacity>
-))}
-
-</View>
-
-{bodyType==="JSON" &&(
-
-<TextInput
-multiline
-style={styles.bodyEditor}
-placeholder={`{
+              <TextInput
+                multiline
+                value={body}
+                onChangeText={setBody}
+                style={styles.bodyEditor}
+                placeholder={
+                  bodyType === "JSON"
+                    ? `{
   "key": "value"
-}`}
-placeholderTextColor="#6b7280"
-/>
+}`
+                    : "Request body..."
+                }
+                placeholderTextColor="#6b7280"
+              />
 
-)}
+            </View>
 
-{(bodyType==="FORM-DATA" || bodyType==="RAW") &&(
+          )}
 
-<TextInput
-multiline
-style={styles.bodyEditor}
-placeholder="Request body..."
-placeholderTextColor="#6b7280"
-/>
+        </View>
 
-)}
+      </View>
 
-</View>
-
-)}
-
-</View>
-
-
-{/* RESPONSE SECTION */}
-
-<View style={styles.responsePanel}>
-
-<Send size={40} color="#3a4358"/>
-
-<Text style={styles.responseTitle}>
-Send a request
-</Text>
-
-<Text style={styles.responseSubtitle}>
-Enter a URL and click Send to see the response
-</Text>
-
-</View>
-
-</View>
-
-</SafeAreaView>
-
-);
-
+    </SafeAreaView>
+  );
 };
 
 export default ApiTester;
 
-
-
 const styles = StyleSheet.create({
 
-safeArea:{
-flex:1,
-backgroundColor:"#0b0f19",
-paddingTop:StatusBar.currentHeight
-},
+  safeArea: {
+    flex: 1,
+    backgroundColor: "#0b0f19",
+    paddingTop: StatusBar.currentHeight
+  },
 
-container:{
-flex:1
-},
+  container: {
+    flex: 1
+  },
 
-requestBar:{
-flexDirection:"row",
-alignItems:"center",
-padding:10,
-borderBottomWidth:1,
-borderColor:"#1e2538"
-},
+  requestBar: {
+    flexDirection: "row",
+    alignItems: "center",
+    padding: 10,
+    borderBottomWidth: 1,
+    borderColor: "#1e2538"
+  },
 
-dropdownContainer:{
-marginRight:10
-},
+  dropdownContainer: {
+    marginRight: 10
+  },
 
-method:{
-flexDirection:"row",
-alignItems:"center",
-backgroundColor:"#0f2e1d",
-paddingHorizontal:12,
-paddingVertical:8,
-borderRadius:6
-},
+  method: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#0f2e1d",
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 6
+  },
 
-methodText:{
-color:"#22c55e",
-marginRight:5
-},
+  methodText: {
+    color: "#22c55e",
+    marginRight: 5
+  },
 
-dropdown:{
-position:"absolute",
-top:40,
-width:110,
-backgroundColor:"#12182a",
-borderRadius:8,
-borderWidth:1,
-borderColor:"#1e2538"
-},
+  dropdown: {
+    position: "absolute",
+    top: 40,
+    width: 110,
+    backgroundColor: "#12182a",
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "#1e2538"
+  },
 
-dropdownItem:{
-padding:10
-},
+  dropdownItem: {
+    padding: 10
+  },
 
-dropdownText:{
-color:"#e5e7eb"
-},
+  dropdownText: {
+    color: "#e5e7eb"
+  },
 
-urlInput:{
-flex:1,
-backgroundColor:"#12182a",
-color:"#fff",
-padding:10,
-borderRadius:6
-},
+  urlInput: {
+    flex: 1,
+    backgroundColor: "#12182a",
+    color: "#fff",
+    padding: 10,
+    borderRadius: 6
+  },
 
-sendButton:{
-flexDirection:"row",
-alignItems:"center",
-marginLeft:10,
-backgroundColor:"#6366f1",
-paddingHorizontal:14,
-paddingVertical:8,
-borderRadius:6
-},
+  sendButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginLeft: 10,
+    backgroundColor: "#6366f1",
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 6
+  },
 
-sendText:{
-color:"#fff",
-marginLeft:6
-},
+  sendText: {
+    color: "#fff",
+    marginLeft: 6
+  },
 
-tabs:{
-flexDirection:"row",
-borderBottomWidth:1,
-borderColor:"#1e2538"
-},
+  tabs: {
+    flexDirection: "row",
+    borderBottomWidth: 1,
+    borderColor: "#1e2538"
+  },
 
-tabText:{
-padding:14,
-color:"#9aa4b2"
-},
+  tabText: {
+    padding: 14,
+    color: "#9aa4b2"
+  },
 
-activeTab:{
-color:"white"
-},
+  activeTab: {
+    color: "white"
+  },
 
-headerTab:{
-flexDirection:"row",
-alignItems:"center"
-},
+  requestSection: {
+    flex: 1
+  },
 
-badge:{
-backgroundColor:"#6366f1",
-borderRadius:10,
-paddingHorizontal:6,
-marginLeft:4
-},
+  headersContainer: {
+    padding: 12
+  },
 
-badgeText:{
-color:"white",
-fontSize:12
-},
+  headerRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 12
+  },
 
-requestSection:{
-flex:0.45,
-borderBottomWidth:1,
-borderColor:"#1e2538"
-},
+  checkbox: {
+    width: 18,
+    height: 18,
+    borderWidth: 1,
+    borderColor: "#374151",
+    borderRadius: 4,
+    marginRight: 10
+  },
 
-headersContainer:{
-padding:12
-},
+  checkboxActive: {
+    backgroundColor: "#6366f1"
+  },
 
-headerRow:{
-flexDirection:"row",
-alignItems:"center",
-marginBottom:12
-},
+  headerInput: {
+    flex: 1,
+    backgroundColor: "#12182a",
+    borderRadius: 6,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+    color: "#fff",
+    marginRight: 10
+  },
 
-checkbox:{
-width:18,
-height:18,
-borderWidth:1,
-borderColor:"#374151",
-borderRadius:4,
-marginRight:10
-},
+  addText: {
+    color: "#9aa4b2",
+    marginTop: 6
+  },
 
-checkboxActive:{
-backgroundColor:"#6366f1"
-},
+  bodyContainer: {
+    padding: 12
+  },
 
-headerInput:{
-flex:1,
-backgroundColor:"#12182a",
-borderRadius:6,
-paddingHorizontal:10,
-paddingVertical:8,
-color:"#fff",
-marginRight:10
-},
+  bodyTabs: {
+    flexDirection: "row",
+    marginBottom: 10
+  },
 
-addText:{
-color:"#9aa4b2",
-marginTop:6
-},
+  bodyTabButton: {
+    backgroundColor: "#12182a",
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 6,
+    marginRight: 8
+  },
 
-bodyContainer:{
-padding:12
-},
+  bodyTabActive: {
+    backgroundColor: "#6366f1"
+  },
 
-bodyTabs:{
-flexDirection:"row",
-marginBottom:10
-},
+  bodyTabText: {
+    color: "white",
+    fontSize: 12
+  },
 
-bodyTabButton:{
-backgroundColor:"#12182a",
-paddingHorizontal:12,
-paddingVertical:6,
-borderRadius:6,
-marginRight:8
-},
-
-bodyTabActive:{
-backgroundColor:"#6366f1"
-},
-
-bodyTabText:{
-color:"white",
-fontSize:12
-},
-
-bodyEditor:{
-backgroundColor:"#0f1424",
-borderWidth:1,
-borderColor:"#1e2538",
-borderRadius:6,
-padding:12,
-color:"#fff",
-height:160,
-textAlignVertical:"top"
-},
-
-responsePanel:{
-flex:0.55,
-alignItems:"center",
-justifyContent:"center"
-},
-
-responseTitle:{
-color:"#cbd5e1",
-marginTop:10,
-fontSize:16
-},
-
-responseSubtitle:{
-color:"#7c8599",
-marginTop:6,
-textAlign:"center"
-}
+  bodyEditor: {
+    backgroundColor: "#0f1424",
+    borderWidth: 1,
+    borderColor: "#1e2538",
+    borderRadius: 6,
+    padding: 12,
+    color: "#fff",
+    height: 160,
+    textAlignVertical: "top"
+  }
 
 });
