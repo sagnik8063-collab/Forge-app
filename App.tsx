@@ -5,6 +5,7 @@ import { NavigationContainer } from '@react-navigation/native'
 
 import LoginScreen from './src/screens/LoginScreen'
 import BottomTab from './src/navigation/BottomTab'
+import SplashScreen from './src/screens/SplashScreen'
 
 import { GluestackUIProvider } from '@/components/ui/gluestack-ui-provider'
 import '@/global.css'
@@ -19,17 +20,22 @@ const App = () => {
 
         <Stack.Navigator
           screenOptions={{ headerShown: false }}
-          initialRouteName="Login"
+          initialRouteName="Splash"
         >
 
-          <Stack.Screen 
-            name="Login" 
-            component={LoginScreen} 
+          <Stack.Screen
+            name="Splash"
+            component={SplashScreen}
           />
 
-          <Stack.Screen 
-            name="BottomTabs" 
-            component={BottomTab} 
+          <Stack.Screen
+            name="Login"
+            component={LoginScreen}
+          />
+
+          <Stack.Screen
+            name="BottomTabs"
+            component={BottomTab}
           />
 
         </Stack.Navigator>

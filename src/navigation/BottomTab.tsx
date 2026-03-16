@@ -1,4 +1,4 @@
-import React from "react";
+import { View, StyleSheet } from "react-native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 
 import ApiTester from "../screens/ApiTester";
@@ -23,39 +23,47 @@ const BottomTab = () => {
       screenOptions={({ route }) => ({
 
         headerShown: false,
+        tabBarHideOnKeyboard: true,
 
         tabBarStyle: {
-          backgroundColor: "#0f1424",
-          borderTopColor: "#1e2538",
-          height: 65
+          position: "absolute",
+          bottom: 30,
+          left: 30,
+          right: 30,
+          backgroundColor: "rgba(30, 41, 59, 0.9)",
+          height: 64,
+          borderRadius: 32,
+          borderWidth: 0.5,
+          borderColor: "rgba(255, 255, 255, 0.15)",
+          elevation: 0,
+          shadowColor: "transparent",
+          paddingBottom: 8,
+          paddingTop: 8,
         },
 
-        tabBarActiveTintColor: "#6366f1",
-        tabBarInactiveTintColor: "#8b93a7",
+        tabBarActiveTintColor: "#fff",
+        tabBarInactiveTintColor: "rgba(255, 255, 255, 0.5)",
 
         tabBarLabelStyle: {
-          fontSize: 12,
-          marginBottom: 5
+          fontSize: 10,
+          fontWeight: "700",
+          textTransform: "uppercase",
+          letterSpacing: 0.5,
         },
 
-        tabBarIcon: ({ color }) => {
+        tabBarIcon: ({ color, focused }) => {
+          let IconComp;
 
-          if (route.name === "ApiTester") {
-            return <Send size={20} color={color} />;
-          }
+          if (route.name === "ApiTester") IconComp = Send;
+          else if (route.name === "Environments") IconComp = Key;
+          else if (route.name === "Profile") IconComp = User;
+          else if (route.name === "Notifications") IconComp = Bell;
 
-          if (route.name === "Environments") {
-            return <Key size={20} color={color} />;
-          }
-
-          if (route.name === "Profile") {
-            return <User size={20} color={color} />;
-          }
-
-          if (route.name === "Notifications") {
-            return <Bell size={20} color={color} />;
-          }
-
+          return (
+            <View style={focused ? styles.activeIconWrap : null}>
+              {IconComp && <IconComp size={focused ? 22 : 20} color={color} strokeWidth={focused ? 2.5 : 2} />}
+            </View>
+          );
         }
 
       })}
@@ -88,3 +96,13 @@ const BottomTab = () => {
 };
 
 export default BottomTab;
+
+const styles = StyleSheet.create({
+  activeIconWrap: {
+    backgroundColor: "rgba(99, 102, 241, 0.2)",
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    borderRadius: 16,
+    marginBottom: 4,
+  },
+});

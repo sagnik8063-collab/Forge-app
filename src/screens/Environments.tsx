@@ -26,10 +26,10 @@ const Environments = () => {
   const [environments, setEnvironments] = useState([
     { name: "Development", color: "#22c55e" },
     { name: "QA", color: "#f59e0b" },
-    { name: "Production", color: "#ef4444" }
+    { name: "Production", color: "#818cf8" }
   ]);
 
-  const [envVariables, setEnvVariables] = useState({
+  const [envVariables, setEnvVariables] = useState<{ [key: string]: any[] }>({
 
     Development: [
       {
@@ -89,7 +89,7 @@ const Environments = () => {
   const updateVariable = (id: number, field: string, value: any) => {
     setEnvVariables(prev => ({
       ...prev,
-      [activeEnv]: prev[activeEnv].map(v =>
+      [activeEnv]: prev[activeEnv].map((v: any) =>
         v.id === id ? { ...v, [field]: value } : v
       )
     }));
@@ -114,7 +114,7 @@ const Environments = () => {
   const deleteVariable = (id: number) => {
     setEnvVariables(prev => ({
       ...prev,
-      [activeEnv]: prev[activeEnv].filter(v => v.id !== id)
+      [activeEnv]: prev[activeEnv].filter((v: any) => v.id !== id)
     }));
   };
 
@@ -246,9 +246,9 @@ const Environments = () => {
           </View>
 
 
-          <ScrollView>
+          <ScrollView contentContainerStyle={{ paddingBottom: 120 }}>
 
-            {variables.map(v => (
+            {variables.map((v: any) => (
 
               <View key={v.id} style={styles.row}>
 
@@ -256,6 +256,9 @@ const Environments = () => {
                   style={styles.keyInput}
                   value={v.key}
                   selection={{ start: 0 }}
+                  underlineColorAndroid="transparent"
+                  autoCorrect={false}
+                  spellCheck={false}
                   onChangeText={(t) => updateVariable(v.id, "key", t)}
                 />
 
@@ -264,6 +267,9 @@ const Environments = () => {
                   value={v.value}
                   selection={{ start: 0 }}
                   secureTextEntry={!v.show}
+                  underlineColorAndroid="transparent"
+                  autoCorrect={false}
+                  spellCheck={false}
                   onChangeText={(t) => updateVariable(v.id, "value", t)}
                 />
 

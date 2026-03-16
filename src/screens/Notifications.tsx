@@ -67,7 +67,7 @@ const Notifications = () => {
 
   };
 
-  const renderItem = ({ item }) => (
+  const renderItem = ({ item }: { item: any }) => (
 
     <View style={styles.card}>
 
@@ -190,7 +190,8 @@ const styles = StyleSheet.create({
   },
 
   listContainer: {
-    paddingHorizontal: 16
+    paddingHorizontal: 16,
+    paddingBottom: 110
   },
 
   card: {
